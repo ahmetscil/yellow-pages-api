@@ -16,6 +16,8 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\People;
 use App\Entity\Phone;
+use App\Repository\PeopleRepository;
+use App\Repository\PhoneRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +26,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 class PeopleController extends AbstractController
 {
@@ -69,11 +72,56 @@ class PeopleController extends AbstractController
 
 
     /**
+     * @Route("/search", name="people-search", methods={"GET"})
+     */
+    public function search(Request $request, PeopleRepository $peopleRepository, PhoneRepository $phoneRepository): Response
+    {
+        $data = array();
+        switch ($request->query->get('type')) {
+            case 'single':
+                $people = $peopleRepository->findPeople(
+                    $request->query->get('search')
+                );
+
+                foreach ($people as $p) {
+                    $item = [];
+                    $item['id'] = $p->getId();
+                    $item['name'] = $p->getName();
+                    $item['surname'] = $p->getSurname();
+                    $item['company'] = $p->getCompany();
+                    array_push($data, $item);
+                }
+                $searchType = 'text';
+            break;
+            case 'number':
+                $phone = $phoneRepository->findNumber(
+                    $request->query->get('search')
+                );
+                $item = array();
+                foreach ($phone as $p) {
+                    $item = [];
+                    $people = $p->getPeople();
+                    $item['id'] = $people->getId();
+                    $item['name'] = $people->getName();
+                    $item['surname'] = $people->getSurname();
+                    $item['company'] = $people->getCompany();
+                    array_push($data, $item);
+                }    
+                $searchType = 'number';
+                break;
+        }
+
+        
+        return new JsonResponse(['status' => true, 'type' => $searchType, 'data' => $data]);
+
+    }
+
+
+    /**
      * @Route("/people/{id}", name="people-show", methods={"GET"})
      */
     public function show(People $people)
     {
-      $data = array();
       $item = [];
       $item['id'] = $people->getId();
       $user = $people->getUser();
@@ -91,8 +139,7 @@ class PeopleController extends AbstractController
         array_push($phone, $l);
       }
       $item['phone'] = $phone;
-      array_push($data, $item);
-      return new JsonResponse(['status' => true, 'data' => $data]);
+      return new JsonResponse(['status' => true, 'data' => $item]);
     }
   
 
@@ -104,7 +151,8 @@ class PeopleController extends AbstractController
         $eM = $this->getDoctrine()->getManager();
         $data = json_decode($request->getContent(), true);
         
-        $userID = $data['user'];
+
+        $userID = $request->query->get('user');
         $user = $this->getDoctrine()->getRepository(User::class)->find($userID);
 
         $people = new People();

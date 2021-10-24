@@ -36,15 +36,17 @@ class PeopleRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?People
+    public function findPeople(string $search = null): array
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
+        $queryBuilder = $this->createQueryBuilder('people')
+            ->where('people.name LIKE :searchTerm')
+            ->orWhere('people.surname LIKE :searchTerm')
+            ->orWhere('people.company LIKE :searchTerm')
+            ->setParameter('searchTerm', '%'.$search.'%');
+
+            return $queryBuilder
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
+
 }

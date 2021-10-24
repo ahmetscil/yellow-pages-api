@@ -36,15 +36,15 @@ class PhoneRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?Phone
+    public function findNumber(string $search = null): array
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
+        $queryBuilder = $this->createQueryBuilder('phone')
+            ->andWhere('phone.number LIKE :searchTerm')
+            ->setParameter('searchTerm', '%'.$search.'%');
+
+            return $queryBuilder
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
+
     }
-    */
 }
