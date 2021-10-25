@@ -50,3 +50,6 @@ Tüm CRUD işlemleri gerçekleştirilir.
 * GET      http://localhost:8080/phone/{id}    Seçili Kayıt
 * PUT      http://localhost:8080/phone/{id}    Update
 * DELETE   http://localhost:8080/phone/{id}    Delete
+
+## Not
+Docker konfigürasyon dosyaları Gary Clarke github reposundan çekilmiştir. 
